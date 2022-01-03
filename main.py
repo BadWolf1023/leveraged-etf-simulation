@@ -17,11 +17,11 @@ The following assumptions are made:
 4. The management fee is waived. This makes certain calculations difficult as the management fee can fluctuate from year to year, even for normal ETFs. Generally speaking though, leveraged ETFs have a management fee of around 1%,
 and normal ETFs can vary between free managament and .5% (higher for international ETFs).
 5. There are no adjustments for inflation because the comparison is not against cash, but rather is against an index.
-6. Taxes are ignored. Various ETFs are structured differently, result in different tax reprucussions for the investor. Note that taxes can be due as frequently as a quarterly basis depending on the structure of the ETF,
+6. Taxes are ignored. Various ETFs are structured differently, resulting in different tax repercussions for the investor. Note that taxes can be due as frequently as a quarterly basis depending on the structure of the ETF,
 and taxes rates can vary (long term capital gains taxes, corporate taxes, and individual taxes).
 
 *I am aware that different expertise, knowledge, metrics, and other factors can increase (or decrease) the odds of a well timed entry or exit, but because the average investor's entries and exits are quite random in relation to
-the short term (and sometimes even long term) outcome of the security, a random entry and exit seem to simulate best actual investor behaviour.
+the short term (and sometimes even long term) outcome of the security, a random entry and exit seem to simulate actual investor behaviour the best.
 
 
 
