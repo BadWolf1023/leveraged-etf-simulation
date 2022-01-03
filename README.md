@@ -1,6 +1,5 @@
 # Leveraged ETF Simulation
  
- """
 Leveraged ETF simulator
 
 Much misinformation surrounds holding leveraged ETFs long term. This simulation attempts to use real data to simulate a 2x leveraged ETF outcome and a 3x leveraged ETF outcome compared with the underlying index.
@@ -44,4 +43,4 @@ annualized rate of return (%) = [[((price of security at entry)/(price of securi
 OUTCOME: TBD
 
 DISCLAIMER: I am not offering investment advice. I am obviously not responsible for your investment outcomes. I am simulating these purely out of curiosity. Investing in leveraged ETFs, ETFs, or other securities, can result in
-"""
+
