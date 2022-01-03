@@ -8,8 +8,6 @@ could generate significant returns, returns that I suspect would far outpace the
 
 While decay may exist in times of volatility where the security price remains constant, risk can be mitigated by investing in major indexes. Major U.S. indexes have historically gone up over their lifetime, such as the DJIA which has gone up over the past 100 years.
 
-Therefore, while the increased exposure 
-
 My hypothesis is that a leverage of 1.9x, contrary to conventional investment wisdom, will result in much higher gains when invested in ETFs that accurately track (>.99) a major U.S. index.
 
 The following assumptions are made:
