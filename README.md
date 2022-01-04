@@ -1,6 +1,6 @@
 Leveraged ETF simulator
 
-Much misinformation surrounds holding leveraged ETFs long term. This simulation attempts to use real data to simulate a 2x leveraged ETF outcome and a 3x leveraged ETF outcome compared with the underlying index.
+Much misinformation surrounds holding leveraged ETFs long term. This simulation attempts to use real data to simulate ETF outcomes at different leverages compared with the underlying index.
 
 It is known that volatility of a security can result in decay. While this may be true, my hypothesis is that the affect of the decay is frequently overplayed and investors shy away from an opportunity that
 could generate significant returns, returns that I suspect would far outpace the rate of decay.
