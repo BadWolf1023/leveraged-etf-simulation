@@ -1,16 +1,28 @@
+**Copyright (C) William Lyles - All Rights Reserved**
+
+**Unauthorized copying of this file, via any medium is strictly prohibited**
+
+**Proprietary and confidential**
+
+**Written by William Lyles <<willglyles@gmail.com>>, January 4th, 2022**
+
+ 
+# **ALL RIGHTS RESERVED. You may not use any part of my work without explicit permission from me, the author.**
+
+
 Leveraged ETF simulator
 
-# BACKGROUND:
+## BACKGROUND:
 Much misinformation surrounds holding leveraged ETFs long term. This simulation attempts to use real data to simulate ETF outcomes at different leverages compared with the underlying index.
 
 It is known that volatility of a security can result in decay. While this may be true, my hypothesis is that the affect of the decay is frequently overplayed and investors shy away from an opportunity that could generate significant returns, returns that I suspect would far outpace the rate of decay.
 
 While decay may exist in times of volatility where the security price remains constant, risk can be mitigated by investing in major indexes. Major U.S. indexes have historically gone up over their lifetime, such as the DJIA which has gone up over the past 100 years.
 
-# HYPOTHESIS: 
+## HYPOTHESIS: 
 My hypothesis is that a leverage of 1.9x, contrary to conventional investment wisdom, will result in much higher gains when invested in ETFs that accurately track (>.99) a major U.S. index.
 
-# ASSUMPTIONS AND LIMITATIONS:
+## ASSUMPTIONS AND LIMITATIONS:
 The following assumptions are made:
 1. The leveraged ETF is held over a long period of time, that is, more than 2 years, but no more than 20 years. This is a study of holding leveraged ETFs long term, so they should be held long term. The amount of time the ETF is held should be randomized since investors frequently struggle to time an exit perfectly.*
 2. It is assumed that investors cannot predict the future of an index's price. Therefore, entries into the market should be randomly selected.*
@@ -22,7 +34,7 @@ The following assumptions are made:
 *I am aware that different expertise, knowledge, metrics, and other factors can increase (or decrease) the odds of a well timed entry or exit, but because the average investor's entries and exits are quite random in relation to the short term (and sometimes even long term) outcome of the security, a random entry and exit seem to simulate actual investor behaviour the best.
 
 
-# Experiment execution:
+## Experiment execution:
 The experiment will go as follows:
 - 1000 experiments will be ran with random entry and random exit points, with the exit point being between 2 years and 20 years of the entry point.
 - The annualized rate of return will be recorded for that period on both a leveraged ETF and a normal ETF.
@@ -32,7 +44,7 @@ The formula for calculating an annualized return based off a given period of tim
 annualized rate of return (%) = [[((price of security at entry)/(price of security at exit)) ^ (1 / number of years security is held)] - 1] * 100
 
 
-# OUTCOME:
+## OUTCOME:
 - Based on the indexes for the Dow Jones (1900 to 2021), NASDAQ-100 (1985 - 2021), and S&P500 (1900 to 2021), a leverage of 1.0 does not yield the highest annualized rate over the 1000 random long term entries and exits.
 - While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal annualized average rate of return for all 3 indexes.
 - A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the annualized rate of return is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
@@ -40,5 +52,8 @@ annualized rate of return (%) = [[((price of security at entry)/(price of securi
 - It makes sense that 2.7 is the optimal leverage for maximum annualized rate of return. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
 
 
-# DISCLAIMER:
+## DISCLAIMER:
 **I am not offering investment advice. I am obviously not responsible for your investment outcomes. I am simulating these purely out of curiosity. Investing in leveraged ETFs, ETFs, or other securities, can result in loss of money (sometimes all of it) and debt.**
+
+
+# **ALL RIGHTS RESERVED. You may not use any part of my work without explicit permission from me, the author.**
