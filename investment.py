@@ -69,16 +69,16 @@ class Investment():
         self.end_investment = current_investment_amount
         self.total_return_dollars = round(self.end_investment - self.start_investment, 2)
         self.total_return_percentage = (self.total_return_dollars / self.start_investment) * 100
-        self.annualized_return = self.get_annualized_return()
+        self.CAGR = self.get_CAGR()
 
-    #annualized rate of return (%) = [[((price of security at exit)/(price of security at entry)) ^ (1 / number of years security is held)] - 1] * 100
-    def get_annualized_return(self):
+    #CAGR (%) = [[((price of security at exit)/(price of security at entry)) ^ (1 / number of years security is held)] - 1] * 100
+    def get_CAGR(self):
         
         number_of_years_invested = ((self.end_date - self.start_date).days)/DAYS_PER_YEAR
         final_ratio = self.end_investment / self.start_investment
-        annualized_ratio = final_ratio ** (1 / number_of_years_invested)
-        annualized_percentage = (annualized_ratio - 1) * 100
-        return annualized_percentage
+        CAGR_ratio = final_ratio ** (1 / number_of_years_invested)
+        CAGR_percentage = (CAGR_ratio - 1) * 100
+        return CAGR_percentage
 
     def get_fractional_year(self, date):
         start_of_year = datetime(date.year, 1, 1).date()
@@ -118,7 +118,7 @@ Ratio:  {self.leverage_ratio}
 Original Investment:   ${self.start_investment:.2f}
 End Value: ${self.end_investment:.2f}
 Total % Return: {round(self.total_return_percentage, 2)}%
-Annualized return: {round(self.annualized_return, 2)}%"""
+CAGR: {round(self.CAGR, 2)}%"""
 
 
 
@@ -126,7 +126,7 @@ Annualized return: {round(self.annualized_return, 2)}%"""
 class InvestmentsStats():
     def __init__(self, leverage_ratio:float):
         self.leverage_ratio = leverage_ratio
-        self.annualized_returns = []
+        self.CAGRs = []
         self.total_gains = []
         self.total_percentage_returns = []
         self.was_largest_gain_list = []
@@ -138,7 +138,7 @@ class InvestmentsStats():
     
     def add_investment_results(self, investment:Investment, was_largest_gain, gained_more_than_1_ratio):
         assert(investment.leverage_ratio == self.leverage_ratio)
-        self.annualized_returns.append(investment.annualized_return)
+        self.CAGRs.append(investment.CAGR)
         self.total_gains.append(investment.total_return_dollars)
         self.total_percentage_returns.append(investment.total_return_percentage)
         self.was_largest_gain_list.append(was_largest_gain)
@@ -182,9 +182,9 @@ class InvestmentsStats():
     def best_overall_return(self) -> float:
         return round(max(self.total_percentage_returns), 2)
 
-    def average_annualized_return(self) -> float:
-        return round(sum(self.annualized_returns) / len(self.annualized_returns), 3)
-    def worst_annualized_return(self) -> float:
-        return round(min(self.annualized_returns), 2)
-    def best_annualized_return(self) -> float:
-        return round(max(self.annualized_returns), 2)
+    def average_CAGR(self) -> float:
+        return round(sum(self.CAGRs) / len(self.CAGRs), 3)
+    def worst_CAGR(self) -> float:
+        return round(min(self.CAGRs), 2)
+    def best_CAGR(self) -> float:
+        return round(max(self.CAGRs), 2)

@@ -37,23 +37,20 @@ The following assumptions are made:
 ## Experiment execution:
 The experiment will go as follows:
 - 1000 experiments will be ran with random entry and random exit points, with the exit point being between 2 years and 20 years of the entry point.
-- The annualized rate of return will be recorded for that period on both a leveraged ETF and a normal ETF.
-- The results will show the average annualized return of those 1000 experiments, worst return, and best return, average total return, percentage of time a leverage outperforms the index, along with other data.
+- The compound annual growth rate (CAGR) will be recorded for that period on both a leveraged ETF and a normal ETF.
+- The results will show the average CAGR of those 1000 experiments, worst return, and best return, average total return, percentage of time a leverage outperforms the index, along with other data.
 
-The formula for calculating an annualized return based off a given period of time is:
-annualized rate of return (%) = [[((price of security at entry)/(price of security at exit)) ^ (1 / number of years security is held)] - 1] * 100
+The formula for calculating CAGR is:
+Compound Annual Growth Rate (%) = [[((price of security at entry)/(price of security at exit)) ^ (1 / number of years security is held)] - 1] * 100
 
 
 ## OUTCOME:
-- Based on the indexes for the Dow Jones (1900 to 2021), NASDAQ-100 (1985 - 2021), and S&P500 (1900 to 2021), a leverage of 1.0 does not yield the highest annualized rate over the 1000 random long term entries and exits.
-- While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal annualized average rate of return for all 3 indexes.
-- A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the annualized rate of return is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
+- Based on the indexes for the Dow Jones (1900 to 2021), NASDAQ-100 (1985 - 2021), and S&P500 (1900 to 2021), a leverage of 1.0 does not yield the highest CAGR over the 1000 random long term entries and exits.
+- While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal CAGR average for all 3 indexes.
+- A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the CAGR average is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
 - A leverage of 3.8-3.9 generates the largest average returns overall.
-- It makes sense that 2.7 is the optimal leverage for maximum annualized rate of return. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
+- It makes sense that 2.7 is the optimal leverage for maximum CAGR. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
 
 
 ## DISCLAIMER:
 **I am not offering investment advice. I am obviously not responsible for your investment outcomes. I am simulating these purely out of curiosity. Investing in leveraged ETFs, ETFs, or other securities, can result in loss of money (sometimes all of it) and debt.**
-
-
-# **ALL RIGHTS RESERVED. You may not use any part of my work without explicit permission from me, the author.**

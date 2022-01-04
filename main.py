@@ -32,19 +32,19 @@ The following assumptions are made:
 ## Experiment execution:
 The experiment will go as follows:
 - 1000 experiments will be ran with random entry and random exit points, with the exit point being between 2 years and 20 years of the entry point.
-- The annualized rate of return will be recorded for that period on both a leveraged ETF and a normal ETF.
-- The results will show the average annualized return of those 1000 experiments, worst return, and best return, average total return, percentage of time a leverage outperforms the index, along with other data.
+- The compound annual growth rate (CAGR) will be recorded for that period on both a leveraged ETF and a normal ETF.
+- The results will show the average CAGR of those 1000 experiments, worst return, and best return, average total return, percentage of time a leverage outperforms the index, along with other data.
 
-The formula for calculating an annualized return based off a given period of time is:
-annualized rate of return (%) = [[((price of security at entry)/(price of security at exit)) ^ (1 / number of years security is held)] - 1] * 100
+The formula for calculating CAGR is:
+Compound Annual Growth Rate (%) = [[((price of security at entry)/(price of security at exit)) ^ (1 / number of years security is held)] - 1] * 100
 
 
 ## OUTCOME:
-- Based on the indexes for the Dow Jones (1900 to 2021), NASDAQ-100 (1985 - 2021), and S&P500 (1900 to 2021), a leverage of 1.0 does not yield the highest annualized rate over the 1000 random long term entries and exits.
-- While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal annualized average rate of return for all 3 indexes.
-- A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the annualized rate of return is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
+- Based on the indexes for the Dow Jones (1900 to 2021), NASDAQ-100 (1985 - 2021), and S&P500 (1900 to 2021), a leverage of 1.0 does not yield the highest CAGR over the 1000 random long term entries and exits.
+- While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal CAGR average for all 3 indexes.
+- A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the CAGR average is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
 - A leverage of 3.8-3.9 generates the largest average returns overall.
-- It makes sense that 2.7 is the optimal leverage for maximum annualized rate of return. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
+- It makes sense that 2.7 is the optimal leverage for maximum CAGR. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
 
 
 ## DISCLAIMER:
@@ -162,7 +162,7 @@ Original Investment: ${period_investment_results[0].start_investment:.2f}"""
     - Ratio:  {leverage_ratio_results.leverage_ratio}
         - End Value: ${leverage_ratio_results.end_investment:.2f}
         - Total % Return: {round(leverage_ratio_results.total_return_percentage, 2)}%
-        - Annualized return: {round(leverage_ratio_results.annualized_return, 2)}%
+        - CAGR %: {round(leverage_ratio_results.CAGR, 2)}%
         - Total Gain: ${leverage_ratio_results.total_return_dollars:.2f}"""
     return result_text
 
@@ -192,9 +192,9 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
    - Average    overall return: {total_leverage_result.average_overall_return():.2f}%
    - Best       overall return: {total_leverage_result.best_overall_return():.2f}%
    - Worst      overall return: {total_leverage_result.worst_overall_return():.2f}%
-   - Average annualized return: {total_leverage_result.average_annualized_return():.2f}%
-   - Best    annualized return: {total_leverage_result.best_annualized_return():.2f}%
-   - Worst   annualized return: {total_leverage_result.worst_annualized_return():.2f}%
+   - Average CAGR: {total_leverage_result.average_CAGR():.2f}%
+   - Best    CAGR: {total_leverage_result.best_CAGR():.2f}%
+   - Worst   CAGR: {total_leverage_result.worst_CAGR():.2f}%
    - Percentage of time > 1.0: {total_leverage_result.percentage_of_time_gained_larger_than_1():.2f}%
    - Number of times > 1.0:    {total_leverage_result.num_times_gained_larger_than_1():.2f}
    - Average start year:     {total_leverage_result.avg_start_year():.2f} yrs
@@ -203,9 +203,9 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
 
 """
 
-    spreadsheet_formatted_result = "Leverage Ratio\tLargest gain # times\tLargest gain % of time\tAverage gain\tBest gain\tWorst gain\tAverage return\tBest return\tWorst return\tAvg Annualized Return\tBest Annualized Return\tWorst Annualized Return\tPercent of time > 1.0\t# of times > 1.0\tAverage start year\tAverage end year\tAverage investment period\n"
+    spreadsheet_formatted_result = "Leverage Ratio\tLargest gain # times\tLargest gain % of time\tAverage gain\tBest gain\tWorst gain\tAverage return\tBest return\tWorst return\tAvg CAGR\tBest CAGR\tWorst CAGR\tPercent of time > 1.0\t# of times > 1.0\tAverage start year\tAverage end year\tAverage investment period\n"
     for leverage_ratio, total_leverage_result in leverage_results.items():
-        spreadsheet_formatted_result += f"""{leverage_ratio}\t{total_leverage_result.num_times_was_largest_gain():.2f}\t{total_leverage_result.percentage_of_time_was_largest_gain()/100:.4f}\t{total_leverage_result.average_gain():.2f}\t{total_leverage_result.best_gain():.2f}\t{total_leverage_result.worst_gain():.2f}\t{total_leverage_result.average_overall_return()/100:.4f}\t{total_leverage_result.best_overall_return()/100:.4f}\t{total_leverage_result.worst_overall_return()/100:.4f}\t{total_leverage_result.average_annualized_return()/100:.4f}\t{total_leverage_result.best_annualized_return()/100:.4f}\t{total_leverage_result.worst_annualized_return()/100:.4f}\t{total_leverage_result.percentage_of_time_gained_larger_than_1()/100:.4f}\t{total_leverage_result.num_times_gained_larger_than_1()}\t{total_leverage_result.avg_start_year():.2f}\t{total_leverage_result.avg_end_year():.2f}\t{total_leverage_result.avg_investment_time():.2f}
+        spreadsheet_formatted_result += f"""{leverage_ratio}\t{total_leverage_result.num_times_was_largest_gain():.2f}\t{total_leverage_result.percentage_of_time_was_largest_gain()/100:.4f}\t{total_leverage_result.average_gain():.2f}\t{total_leverage_result.best_gain():.2f}\t{total_leverage_result.worst_gain():.2f}\t{total_leverage_result.average_overall_return()/100:.4f}\t{total_leverage_result.best_overall_return()/100:.4f}\t{total_leverage_result.worst_overall_return()/100:.4f}\t{total_leverage_result.average_CAGR()/100:.4f}\t{total_leverage_result.best_CAGR()/100:.4f}\t{total_leverage_result.worst_CAGR()/100:.4f}\t{total_leverage_result.percentage_of_time_gained_larger_than_1()/100:.4f}\t{total_leverage_result.num_times_gained_larger_than_1()}\t{total_leverage_result.avg_start_year():.2f}\t{total_leverage_result.avg_end_year():.2f}\t{total_leverage_result.avg_investment_time():.2f}
 """
     #print(result)
 
