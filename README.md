@@ -37,7 +37,7 @@ annualized rate of return (%) = [[((price of security at entry)/(price of securi
 - While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal annualized average rate of return for all 3 indexes.
 - A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the annualized rate of return is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
 - A leverage of 3.8-3.9 generates the largest average returns overall.
-- It makes sense that 2.7 is the optimal leverage for maximum annualized rate of return. Thisnicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
+- It makes sense that 2.7 is the optimal leverage for maximum annualized rate of return. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
 
 
 # DISCLAIMER:
