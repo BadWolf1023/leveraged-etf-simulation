@@ -66,6 +66,8 @@ security_historical_data:List[DailyAssetData] = []
 MIN_INVESTMENT_YEARS = 2
 MAX_INVESTMENT_YEARS = 20
 
+MINIMUM_START_YEAR = 1960
+
 
 
 class IncorrectUsage(Exception):
@@ -135,7 +137,8 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
     results = defaultdict(hint_typed_dd)
     max_start_date = security_historical_data[-1].date - timedelta(days=int(round(MIN_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
     for i in range(num_times):
-        min_index = choose_random_date(max_date=max_start_date)
+        min_start_date = None if MINIMUM_START_YEAR is None else datetime(MINIMUM_START_YEAR, 1, 1).date()
+        min_index = choose_random_date(min_date=min_start_date, max_date=max_start_date)
         min_end_date = security_historical_data[min_index].date + timedelta(days=int(round(MIN_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
         max_end_date = security_historical_data[min_index].date + timedelta(days=int(round(MAX_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
         max_index = choose_random_date(min_date=min_end_date, max_date=max_end_date)
@@ -214,9 +217,11 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
 
 if __name__ == "__main__":
     for file_name in file_names:
+        print(f"File: {file_name}")
         load_data(file_name)
         verify_correctness()
         simulation_results = run_simulation(num_times=1000, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
+        
         print_results(simulation_results)
 
 
