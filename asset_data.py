@@ -1,3 +1,11 @@
+"""
+/* Copyright (C) William Lyles - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ * Written by William Lyles <willglyles@gmail.com>, January 4th, 2022
+ */
+ """
+
 from typing import List
 from dateutil.parser import parse
 from datetime import date

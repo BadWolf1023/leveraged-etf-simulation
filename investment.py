@@ -1,3 +1,11 @@
+"""
+/* Copyright (C) William Lyles - All Rights Reserved
+ * Unauthorized copying of this file, via any medium is strictly prohibited
+ * Proprietary and confidential
+ * Written by William Lyles <willglyles@gmail.com>, January 4th, 2022
+ */
+ """
+
 from collections import defaultdict
 from common import DAYS_PER_YEAR, STARTING_INVESTMENT_AMOUNT, DECREASE_LEVERAGE_AT_YEAR_END,YEAR_END_DECREASE
 import math
