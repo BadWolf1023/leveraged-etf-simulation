@@ -297,7 +297,7 @@ class InvestmentsStats():
         f"{cagr_avg_when_more_than_threshold/100:.4f}" if isinstance(cagr_avg_when_more_than_threshold, float) else f"{cagr_avg_when_more_than_threshold}"]
 
         data = [f"{self.leverage_ratio}",
-        f"{self.num_times_was_largest_gain():.2f}",
+        f"{self.num_times_was_largest_gain()}",
         f"{self.percentage_of_time_was_largest_gain()/100:.4f}",
         f"{self.average_gain():.2f}",
         f"{self.best_gain():.2f}",
