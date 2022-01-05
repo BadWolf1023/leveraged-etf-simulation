@@ -195,18 +195,6 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
             is_best_ratio = cur_leverage_ratio == largest_return_ratio
             leverage_results[cur_leverage_ratio].add_investment_results(leverage_ratio_results, is_best_ratio, is_greater_than_1_ratio)
     
-    
-    if common.PRINT_EXTRA_STATS_ON_BEST_WORST:
-        best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
-        worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
-        worst_return_info_text = f"Worst Overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
-        best_return_info_text = f"Best overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
-        for leverage_ratio, total_leverage_result in leverage_results.items():
-            best_cagr_text += "\n" + total_leverage_result.get_tab_printed_investment(total_leverage_result.best_CAGR_index())
-            worst_cagr_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_CAGR_index())
-            worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_overall_return_index())
-            best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
-        print(f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n")
 
     result = ""
     for leverage_ratio, total_leverage_result in leverage_results.items():
@@ -237,7 +225,19 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
         )
     #print(result)
 
-    print(f"Total results:\n{spreadsheet_formatted_result}\n")
+    print(f"Total results:\n{spreadsheet_formatted_result}\n\n")
+
+    if common.PRINT_EXTRA_STATS_ON_BEST_WORST:
+        best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        worst_return_info_text = f"Worst Overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        best_return_info_text = f"Best overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        for leverage_ratio, total_leverage_result in leverage_results.items():
+            best_cagr_text += "\n" + total_leverage_result.get_tab_printed_investment(total_leverage_result.best_CAGR_index())
+            worst_cagr_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_CAGR_index())
+            worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_overall_return_index())
+            best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
+        print(f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n\n\n\n\n")
 
    
 
