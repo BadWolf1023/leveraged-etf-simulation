@@ -68,6 +68,9 @@ MAX_INVESTMENT_YEARS = 20
 
 MINIMUM_START_YEAR = None
 MAXIMUM_END_YEAR = None
+PRINT_EXTRA_STATS_ON_BEST_WORST = True
+PRINT_EXTRA_STATS_ON_LOSSES = True
+PRINT_EXTRA_STATS_ON_GAINS = True
 
 
 
@@ -163,7 +166,7 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
         end_date = security_historical_data[start_index].date + investment_length #The end date is simply the investment's start date plus the investment's length
         end_index = get_date_index(end_date) #Get the index in security_historical_data of the trading day that is closest to the end date
 
-        print(f"{security_historical_data[start_index].date} to {end_date}")
+        #print(f"{security_historical_data[start_index].date} to {end_date}")
         for leverage_ratio in leverage_ratios:
             cur_investment = Investment(start_index, end_index, security_historical_data, leverage_ratio)
             results[leverage_ratio].append(cur_investment)
@@ -187,12 +190,12 @@ Original Investment: ${period_investment_results[0].start_investment:.2f}"""
     return result_text
 
 
-def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
+def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> None:
     leverage_results = {leverage_ratio:InvestmentsStats(leverage_ratio) for leverage_ratio in simulation_results}
     simulation_results = restructure_results(simulation_results)
     
     for period_investment_results in simulation_results:
-        #print(get_period_investment_results_str(period_investment_results))
+        # print(get_period_investment_results_str(period_investment_results))
         largest_return_ratio = max(period_investment_results, key=lambda x: x.total_return_dollars).leverage_ratio
         
         for leverage_ratio_results in period_investment_results:
@@ -201,6 +204,19 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
             is_best_ratio = cur_leverage_ratio == largest_return_ratio
             leverage_results[cur_leverage_ratio].add_investment_results(leverage_ratio_results, is_best_ratio, is_greater_than_1_ratio)
     
+    
+    if PRINT_EXTRA_STATS_ON_BEST_WORST:
+        best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        worst_return_info_text = f"Worst Overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        best_return_info_text = f"Best overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        for leverage_ratio, total_leverage_result in leverage_results.items():
+            best_cagr_text += "\n" + total_leverage_result.get_tab_printed_investment(total_leverage_result.best_CAGR_index())
+            worst_cagr_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_CAGR_index())
+            worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_overall_return_index())
+            best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
+        print(f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n")
+
     result = ""
     for leverage_ratio, total_leverage_result in leverage_results.items():
         result += f"""Leverage Ratio: {leverage_ratio}
@@ -229,8 +245,7 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> None:
 """
     #print(result)
 
-    print(spreadsheet_formatted_result)
-    print()
+    print(f"Total results:\n{spreadsheet_formatted_result}\n")
 
    
 
@@ -240,7 +255,7 @@ if __name__ == "__main__":
         print(f"File: {file_name}")
         load_data(file_name)
         verify_correctness()
-        simulation_results = run_simulation(num_times=100, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
+        simulation_results = run_simulation(num_times=10, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
         
         print_results(simulation_results)
 

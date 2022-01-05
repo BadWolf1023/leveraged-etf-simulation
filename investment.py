@@ -18,6 +18,7 @@ class Investment():
     def __init__(self, start_index, end_index, security_historical_data, leverage_ratio):
         self.start_date = security_historical_data[start_index].date
         self.end_date = security_historical_data[end_index].date
+        # print(f"{self.start_date} to {self.end_date}")
         self.start_investment = STARTING_INVESTMENT_AMOUNT
         self.leverage_ratio = leverage_ratio
         self.compute_return(start_index, end_index, security_historical_data)
@@ -131,6 +132,8 @@ class InvestmentsStats():
         self.total_percentage_returns = []
         self.was_largest_gain_list = []
         self.gained_more_than_1_ratio_list = []
+        self.start_dates = []
+        self.end_dates = []
         self.start_years = []
         self.end_years = []
         self.investment_periods = []
@@ -146,7 +149,9 @@ class InvestmentsStats():
         scalar_start_year = investment.get_scalar_start_year()
         scalar_end_year = investment.get_scalar_end_year()
         self.start_years.append(scalar_start_year)
+        self.start_dates.append(investment.start_date)
         self.end_years.append(scalar_end_year)
+        self.end_dates.append(investment.end_date)
         self.investment_periods.append(scalar_end_year-scalar_start_year)
 
     def avg_start_year(self):
@@ -168,23 +173,88 @@ class InvestmentsStats():
     def num_times_was_largest_gain(self):
         return round(sum(self.was_largest_gain_list), 2)
 
-    def average_gain(self) -> float:
-        return round(sum(self.total_gains) / len(self.total_gains), 2)
-    def worst_gain(self) -> float:
-        return round(min(self.total_gains), 2)
-    def best_gain(self) -> float:
-        return round(max(self.total_gains), 2)
 
-    def average_overall_return(self) -> float:
-        return round(sum(self.total_percentage_returns) / len(self.total_percentage_returns), 2)
-    def worst_overall_return(self) -> float:
-        return round(min(self.total_percentage_returns), 2)
-    def best_overall_return(self) -> float:
-        return round(max(self.total_percentage_returns), 2)
 
-    def average_CAGR(self) -> float:
-        return round(sum(self.CAGRs) / len(self.CAGRs), 3)
-    def worst_CAGR(self) -> float:
-        return round(min(self.CAGRs), 2)
-    def best_CAGR(self) -> float:
-        return round(max(self.CAGRs), 2)
+    # ==== Average Overall Gains Functions ====
+    def average_gain(self, should_round=True) -> float:
+        avg_gain = sum(self.total_gains) / len(self.total_gains)
+        return round(avg_gain, 2) if round else avg_gain
+
+    def worst_gain(self, should_round=True) -> float:
+        min_gain = min(self.total_gains)
+        return round(min_gain, 2) if round else min_gain
+
+    def best_gain(self, should_round=True) -> float:
+        max_gain = max(self.total_gains)
+        return round(max_gain, 2) if round else max_gain
+
+    def worst_gain_index(self):
+        return self.total_gains.index(self.worst_gain(should_round=False))
+    
+    def best_gain_index(self):
+        return self.total_gains.index(self.best_gain(should_round=False))
+
+
+    # ==== Average Overall Return Functions ====
+    def average_overall_return(self, should_round=True) -> float:
+        avg_overall_return = sum(self.total_percentage_returns) / len(self.total_percentage_returns)
+        return round(avg_overall_return, 2) if should_round else avg_overall_return
+    
+    def worst_overall_return(self, should_round=True) -> float:
+        min_overall_return = min(self.total_percentage_returns)
+        return round(min_overall_return, 2) if should_round else min_overall_return
+    
+    def best_overall_return(self, should_round=True) -> float:
+        max_overall_return = max(self.total_percentage_returns)
+        return round(max_overall_return, 2) if should_round else max_overall_return
+    
+    def worst_overall_return_index(self):
+        return self.total_percentage_returns.index(self.worst_overall_return(should_round=False))
+    
+    def best_overall_return_index(self):
+        return self.total_percentage_returns.index(self.best_overall_return(should_round=False))
+
+
+
+    # ==== CAGR Functions ====
+    def average_CAGR(self, should_round=True) -> float:
+        avg_CAGR = sum(self.CAGRs) / len(self.CAGRs)
+        return round(avg_CAGR, 2) if should_round else avg_CAGR
+
+    def worst_CAGR(self, should_round=True) -> float:
+        min_CAGR = min(self.CAGRs)
+        return round(min_CAGR, 2) if should_round else min_CAGR
+
+    def best_CAGR(self, should_round=True) -> float:
+        max_CAGR = max(self.CAGRs)
+        return round(max_CAGR, 2) if should_round else max_CAGR
+
+    def worst_CAGR_index(self):
+        return self.CAGRs.index(self.worst_CAGR(should_round=False))
+
+    def best_CAGR_index(self):
+        return self.CAGRs.index(self.best_CAGR(should_round=False))
+
+    
+
+    @staticmethod
+    def get_tab_printed_invesment_headers():
+        return """Leverage Ratio\tCAGR\tTotal Gain\t% Return\tWas largest gain for ratios\tGained more than 1.0 ratio\tStart Date\tEnd Date\tInvestment Period (yrs)"""
+        
+    def get_tab_printed_investment(self, index):
+        if index < 0 or index >= len(self.CAGRs):
+            raise IndexError(f"Index {index} not in range of recorded investments (0 to {len(self.CAGRs)-1})")
+        return f"""{self.leverage_ratio}\t{self.CAGRs[index]:.2f}\t{self.total_gains[index]:.2f}\t{self.total_percentage_returns[index]:.2f}\t{"Yes" if self.was_largest_gain_list[index] else "No"}\t{"Yes" if self.gained_more_than_1_ratio_list[index] else "No"}\t{self.start_dates[index]}\t{self.end_dates[index]}\t{self.investment_periods[index]:.2f}"""
+    def get_printable_index_information(self, index):
+        if index < 0 or index >= len(self.CAGRs):
+            raise IndexError(f"Index {index} not in range of recorded investments (0 to {len(self.CAGRs)-1})")
+        return f"""Leverage Ratio: {self.leverage_ratio}
+CAGR: {self.CAGRs[index]:.2f}%
+Total Gain: ${self.total_gains[index]:.2f}
+% Return: {self.total_percentage_returns[index]:.2f}%
+Was largest gain for ratios: {"Yes" if self.was_largest_gain_list[index] else "No"}
+Gained more than 1.0 ratio:  {"Yes" if self.gained_more_than_1_ratio_list[index] else "No"}
+Start: {self.start_dates[index]}
+End:  {self.end_dates[index]}
+Investment Period: {self.investment_periods[index]:.2f} yrs
+"""
