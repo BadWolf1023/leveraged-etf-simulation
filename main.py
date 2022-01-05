@@ -66,8 +66,8 @@ security_historical_data:List[DailyAssetData] = []
 MIN_INVESTMENT_YEARS = 2
 MAX_INVESTMENT_YEARS = 20
 
-MINIMUM_START_YEAR = 1960
-MAXIMUM_END_YEAR = 2010
+MINIMUM_START_YEAR = None
+MAXIMUM_END_YEAR = None
 
 
 
@@ -157,8 +157,8 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
     results = defaultdict(hint_typed_dd)
     for i in range(num_times):
         investment_length = choose_random_length() #Choose random length of time for investment
-        min_start_date = max([security_historical_data[0].date, datetime(MINIMUM_START_YEAR, 1, 1).date()]) #Determine the minimum start date for the investment
-        max_start_date = min([security_historical_data[-1].date, datetime(MAXIMUM_END_YEAR, 12, 31).date()]) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
+        min_start_date = max( security_historical_data[0].date, security_historical_data[0].date if MINIMUM_START_YEAR is None else datetime(MINIMUM_START_YEAR, 1, 1).date() ) #Determine the minimum start date for the investment
+        max_start_date = min( security_historical_data[-1].date, security_historical_data[-1].date if MAXIMUM_END_YEAR is None else datetime(MAXIMUM_END_YEAR, 12, 31).date() ) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
         start_index = choose_random_date(min_date=min_start_date, max_date=max_start_date) #Get the index in security_historical_data of a randomly chosen date between the minimum and maximum start date
         end_date = security_historical_data[start_index].date + investment_length #The end date is simply the investment's start date plus the investment's length
         end_index = get_date_index(end_date) #Get the index in security_historical_data of the trading day that is closest to the end date
