@@ -67,6 +67,7 @@ MIN_INVESTMENT_YEARS = 2
 MAX_INVESTMENT_YEARS = 20
 
 MINIMUM_START_YEAR = 1960
+MAXIMUM_END_YEAR = 2010
 
 
 
@@ -110,6 +111,7 @@ def get_min_date_index(min_date:date=None):
     for index, day in enumerate(security_historical_data):
         if day.date >= min_date:
             return index
+    raise IncorrectUsage(f"You requested a minimum date of {min_date}, but the csv file's latest date is {day.date} which is before your minimum date.")
 
 def get_max_date_index(max_date:date=None):
     if max_date is None:
@@ -117,6 +119,20 @@ def get_max_date_index(max_date:date=None):
     for index, day in reversed_enumerate(security_historical_data):
         if day.date <= max_date:
             return index
+    raise IncorrectUsage(f"You requested a maximum date of {max_date}, but the csv file's earliest date is {day.date} which is after your maximum date.")
+
+def get_date_index(date:date=None):
+    def get_delta(needle_date, cur_date):
+        return (needle_date - cur_date).days ** 2
+
+    index_with_lowest_delta = 0
+    lowest_delta = get_delta(date, security_historical_data[0].date)
+    for index, day in enumerate(security_historical_data):
+        cur_delta = get_delta(date, day.date)
+        if cur_delta <= lowest_delta:
+            lowest_delta = cur_delta
+            index_with_lowest_delta = index
+    return index_with_lowest_delta
 
 def choose_random_date(min_date=None, max_date=None):
     min_index = get_min_date_index(min_date)
@@ -127,6 +143,10 @@ def choose_random_date(min_date=None, max_date=None):
 
     return random.randint(min_index, max_index)
 
+def choose_random_length(min_years=MIN_INVESTMENT_YEARS, max_years=MAX_INVESTMENT_YEARS):
+    return timedelta(days= random.randint(round(min_years*DAYS_PER_YEAR), round(max_years*DAYS_PER_YEAR)) )
+
+
 def hint_typed_dd() -> List[Investment]:
     return []
 
@@ -135,17 +155,17 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
         leverage_ratios.append(1.0)
 
     results = defaultdict(hint_typed_dd)
-    max_start_date = security_historical_data[-1].date - timedelta(days=int(round(MIN_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
     for i in range(num_times):
-        min_start_date = None if MINIMUM_START_YEAR is None else datetime(MINIMUM_START_YEAR, 1, 1).date()
-        min_index = choose_random_date(min_date=min_start_date, max_date=max_start_date)
-        min_end_date = security_historical_data[min_index].date + timedelta(days=int(round(MIN_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
-        max_end_date = security_historical_data[min_index].date + timedelta(days=int(round(MAX_INVESTMENT_YEARS*DAYS_PER_YEAR, 0)))
-        max_index = choose_random_date(min_date=min_end_date, max_date=max_end_date)
+        investment_length = choose_random_length() #Choose random length of time for investment
+        min_start_date = max([security_historical_data[0].date, datetime(MINIMUM_START_YEAR, 1, 1).date()]) #Determine the minimum start date for the investment
+        max_start_date = min([security_historical_data[-1].date, datetime(MAXIMUM_END_YEAR, 12, 31).date()]) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
+        start_index = choose_random_date(min_date=min_start_date, max_date=max_start_date) #Get the index in security_historical_data of a randomly chosen date between the minimum and maximum start date
+        end_date = security_historical_data[start_index].date + investment_length #The end date is simply the investment's start date plus the investment's length
+        end_index = get_date_index(end_date) #Get the index in security_historical_data of the trading day that is closest to the end date
 
-        
+        print(f"{security_historical_data[start_index].date} to {end_date}")
         for leverage_ratio in leverage_ratios:
-            cur_investment = Investment(min_index, max_index, security_historical_data, leverage_ratio)
+            cur_investment = Investment(start_index, end_index, security_historical_data, leverage_ratio)
             results[leverage_ratio].append(cur_investment)
     return results
 
@@ -220,7 +240,7 @@ if __name__ == "__main__":
         print(f"File: {file_name}")
         load_data(file_name)
         verify_correctness()
-        simulation_results = run_simulation(num_times=1000, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
+        simulation_results = run_simulation(num_times=100, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
         
         print_results(simulation_results)
 
