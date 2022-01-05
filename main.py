@@ -57,20 +57,11 @@ import random
 from asset_data import DailyAssetData
 
 from typing import DefaultDict, List
-from common import reversed_enumerate, DAYS_PER_YEAR
+import common
 from investment import Investment, InvestmentsStats
 
-file_names = ["dji_d.csv", "spx_d.csv", "ndx_d.csv"]
+
 security_historical_data:List[DailyAssetData] = []
-
-MIN_INVESTMENT_YEARS = 2
-MAX_INVESTMENT_YEARS = 20
-
-MINIMUM_START_YEAR = None
-MAXIMUM_END_YEAR = None
-PRINT_EXTRA_STATS_ON_BEST_WORST = True
-PRINT_EXTRA_STATS_ON_LOSSES = True
-PRINT_EXTRA_STATS_ON_GAINS = True
 
 
 
@@ -119,7 +110,7 @@ def get_min_date_index(min_date:date=None):
 def get_max_date_index(max_date:date=None):
     if max_date is None:
         return len(security_historical_data) - 1
-    for index, day in reversed_enumerate(security_historical_data):
+    for index, day in common.reversed_enumerate(security_historical_data):
         if day.date <= max_date:
             return index
     raise IncorrectUsage(f"You requested a maximum date of {max_date}, but the csv file's earliest date is {day.date} which is after your maximum date.")
@@ -146,8 +137,8 @@ def choose_random_date(min_date=None, max_date=None):
 
     return random.randint(min_index, max_index)
 
-def choose_random_length(min_years=MIN_INVESTMENT_YEARS, max_years=MAX_INVESTMENT_YEARS):
-    return timedelta(days= random.randint(round(min_years*DAYS_PER_YEAR), round(max_years*DAYS_PER_YEAR)) )
+def choose_random_length(min_years=common.MIN_INVESTMENT_YEARS, max_years=common.MAX_INVESTMENT_YEARS):
+    return timedelta(days= random.randint(round(min_years*common.DAYS_PER_YEAR), round(max_years*common.DAYS_PER_YEAR)) )
 
 
 def hint_typed_dd() -> List[Investment]:
@@ -160,8 +151,8 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
     results = defaultdict(hint_typed_dd)
     for i in range(num_times):
         investment_length = choose_random_length() #Choose random length of time for investment
-        min_start_date = max( security_historical_data[0].date, security_historical_data[0].date if MINIMUM_START_YEAR is None else datetime(MINIMUM_START_YEAR, 1, 1).date() ) #Determine the minimum start date for the investment
-        max_start_date = min( security_historical_data[-1].date, security_historical_data[-1].date if MAXIMUM_END_YEAR is None else datetime(MAXIMUM_END_YEAR, 12, 31).date() ) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
+        min_start_date = max( security_historical_data[0].date, security_historical_data[0].date if common.MINIMUM_START_YEAR is None else datetime(common.MINIMUM_START_YEAR, 1, 1).date() ) #Determine the minimum start date for the investment
+        max_start_date = min( security_historical_data[-1].date, security_historical_data[-1].date if common.MAXIMUM_END_YEAR is None else datetime(common.MAXIMUM_END_YEAR, 12, 31).date() ) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
         start_index = choose_random_date(min_date=min_start_date, max_date=max_start_date) #Get the index in security_historical_data of a randomly chosen date between the minimum and maximum start date
         end_date = security_historical_data[start_index].date + investment_length #The end date is simply the investment's start date plus the investment's length
         end_index = get_date_index(end_date) #Get the index in security_historical_data of the trading day that is closest to the end date
@@ -205,7 +196,7 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
             leverage_results[cur_leverage_ratio].add_investment_results(leverage_ratio_results, is_best_ratio, is_greater_than_1_ratio)
     
     
-    if PRINT_EXTRA_STATS_ON_BEST_WORST:
+    if common.PRINT_EXTRA_STATS_ON_BEST_WORST:
         best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
         worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
         worst_return_info_text = f"Worst Overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
@@ -236,13 +227,14 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
    - Average start year:     {total_leverage_result.avg_start_year():.2f} yrs
    - Average end year:       {total_leverage_result.avg_end_year():.2f} yrs
    - Average investment time:{total_leverage_result.avg_investment_time():.2f} yrs
-
 """
 
-    spreadsheet_formatted_result = "Leverage Ratio\tLargest gain # times\tLargest gain % of time\tAverage gain\tBest gain\tWorst gain\tAverage return\tBest return\tWorst return\tAvg CAGR\tBest CAGR\tWorst CAGR\tPercent of time > 1.0\t# of times > 1.0\tAverage start year\tAverage end year\tAverage investment period\n"
+    spreadsheet_formatted_result = InvestmentsStats.get_tab_printed_overview_headers(cagr_threshold=common.EXTRA_STAT_CAGR_THRESHOLD, cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD)
     for leverage_ratio, total_leverage_result in leverage_results.items():
-        spreadsheet_formatted_result += f"""{leverage_ratio}\t{total_leverage_result.num_times_was_largest_gain():.2f}\t{total_leverage_result.percentage_of_time_was_largest_gain()/100:.4f}\t{total_leverage_result.average_gain():.2f}\t{total_leverage_result.best_gain():.2f}\t{total_leverage_result.worst_gain():.2f}\t{total_leverage_result.average_overall_return()/100:.4f}\t{total_leverage_result.best_overall_return()/100:.4f}\t{total_leverage_result.worst_overall_return()/100:.4f}\t{total_leverage_result.average_CAGR()/100:.4f}\t{total_leverage_result.best_CAGR()/100:.4f}\t{total_leverage_result.worst_CAGR()/100:.4f}\t{total_leverage_result.percentage_of_time_gained_larger_than_1()/100:.4f}\t{total_leverage_result.num_times_gained_larger_than_1()}\t{total_leverage_result.avg_start_year():.2f}\t{total_leverage_result.avg_end_year():.2f}\t{total_leverage_result.avg_investment_time():.2f}
-"""
+        spreadsheet_formatted_result += "\n" + total_leverage_result.get_tab_printed_overview_data(
+            cagr_threshold=common.EXTRA_STAT_CAGR_THRESHOLD,
+            cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD
+        )
     #print(result)
 
     print(f"Total results:\n{spreadsheet_formatted_result}\n")
@@ -251,11 +243,11 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
 
 
 if __name__ == "__main__":
-    for file_name in file_names:
+    for file_name in common.file_names:
         print(f"File: {file_name}")
         load_data(file_name)
         verify_correctness()
-        simulation_results = run_simulation(num_times=10, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
+        simulation_results = run_simulation(num_times=common.NUMBER_OF_INVESTMENTS, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
         
         print_results(simulation_results)
 

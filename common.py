@@ -5,9 +5,21 @@
  * Written by William Lyles <willglyles@gmail.com>, January 4th, 2022
  */
  """
+file_names = ["dji_d.csv", "spx_d.csv", "ndx_d.csv"]
 
 DAYS_PER_YEAR = 365.2422
 STARTING_INVESTMENT_AMOUNT = 10000
+
+NUMBER_OF_INVESTMENTS = 5
+MIN_INVESTMENT_YEARS = 2
+MAX_INVESTMENT_YEARS = 20
+
+MINIMUM_START_YEAR = None
+MAXIMUM_END_YEAR = None
+PRINT_EXTRA_STATS_ON_BEST_WORST = True
+PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD = True
+EXTRA_STAT_CAGR_THRESHOLD = .01 #This threshold is used for additional display stats when investment's CAGR is below or above this threshold - not used if PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD is False
+
 
 DECREASE_LEVERAGE_AT_YEAR_END = True
 YEAR_END_DECREASE = .01 #1%

@@ -235,16 +235,100 @@ class InvestmentsStats():
     def best_CAGR_index(self):
         return self.CAGRs.index(self.best_CAGR(should_round=False))
 
-    
+    def avg_CAGR_when_less_than(self, threshold, should_round=True):
+        cagrs_below_threshold = list(filter(lambda x: x < threshold, self.CAGRs))
+        if len(cagrs_below_threshold) == 0:
+            return f"N/A (none of the investment CAGRs were below the threshold of {threshold})"
+        avg_cagr_below_threshold = sum(cagrs_below_threshold) / len(cagrs_below_threshold)
+        return round(avg_cagr_below_threshold, 2) if should_round else avg_cagr_below_threshold
+
+    def avg_CAGR_when_greater_than(self, threshold, should_round=True):
+        cagrs_above_threshold = list(filter(lambda x: x > threshold, self.CAGRs))
+        if len(cagrs_above_threshold) == 0:
+            return f"N/A (none of the investment CAGRs were above the threshold of {threshold})"
+        avg_cagr_above_threshold = sum(cagrs_above_threshold) / len(cagrs_above_threshold)
+        return round(avg_cagr_above_threshold, 2) if should_round else avg_cagr_above_threshold
+
+    def percentage_CAGR_less_than(self, threshold, should_round=True):
+        frequency_for_threshold = (len(list(filter(lambda x: x < threshold, self.CAGRs))) / len(self.CAGRs)) * 100
+        return round(frequency_for_threshold, 2) if should_round else frequency_for_threshold
+        
+    def percentage_CAGR_greater_than(self, threshold, should_round=True):
+        frequency_for_threshold = (len(list(filter(lambda x: x > threshold, self.CAGRs))) / len(self.CAGRs)) * 100
+        return round(frequency_for_threshold, 2) if should_round else frequency_for_threshold
+
+    @staticmethod
+    def get_tab_printed_overview_headers(cagr_threshold=0.0, cagr_threshold_stats=True):
+        cagr_threshold_headers = [f"Percentage of time CAGR < {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
+        f"Avg CAGR when CAGR < {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
+        f"Percentage of time CAGR > {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
+        f"Avg CAGR when CAGR > {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)"]
+
+        headers = ["Leverage Ratio",
+        "Largest gain # times",
+        "Largest gain percentage of time (Mult by 100 for percentage)",
+        "Average gain",
+        "Best gain",
+        "Worst gain",
+        "Average return (Mult by 100 for percentage)",
+        "Best return (Mult by 100 for percentage)",
+        "Worst return (Mult by 100 for percentage)",
+        "Avg CAGR (Mult by 100 for percentage)",
+        "Best CAGR (Mult by 100 for percentage)",
+        "Worst CAGR (Mult by 100 for percentage)",
+        "Percent of time > 1.0 (Mult by 100 for percentage)",
+        "# of times > 1.0"]
+
+        headers_2 = [
+        "Average start year",
+        "Average end year",
+        "Average investment period"
+        ]
+
+        final_headers = (headers + cagr_threshold_headers + headers_2) if cagr_threshold_stats else (headers + headers_2)
+        return "\t".join(final_headers)
+
+    def get_tab_printed_overview_data(self, cagr_threshold=0.0, cagr_threshold_stats=True):
+        cagr_avg_when_less_than_threshold = self.avg_CAGR_when_less_than(cagr_threshold)
+        cagr_avg_when_more_than_threshold = self.avg_CAGR_when_greater_than(cagr_threshold)
+        cagr_threshold_data = [f"{self.percentage_CAGR_less_than(cagr_threshold)/100:.4f}",
+        f"{cagr_avg_when_less_than_threshold/100:.4f}" if isinstance(cagr_avg_when_less_than_threshold, float) else f"{cagr_avg_when_less_than_threshold}",
+        f"{self.percentage_CAGR_greater_than(cagr_threshold)/100:.4f}",
+        f"{cagr_avg_when_more_than_threshold/100:.4f}" if isinstance(cagr_avg_when_more_than_threshold, float) else f"{cagr_avg_when_more_than_threshold}"]
+
+        data = [f"{self.leverage_ratio}",
+        f"{self.num_times_was_largest_gain():.2f}",
+        f"{self.percentage_of_time_was_largest_gain()/100:.4f}",
+        f"{self.average_gain():.2f}",
+        f"{self.best_gain():.2f}",
+        f"{self.worst_gain():.2f}",
+        f"{self.average_overall_return()/100:.4f}",
+        f"{self.best_overall_return()/100:.4f}",
+        f"{self.worst_overall_return()/100:.4f}",
+        f"{self.average_CAGR()/100:.4f}",
+        f"{self.best_CAGR()/100:.4f}",
+        f"{self.worst_CAGR()/100:.4f}",
+        f"{self.percentage_of_time_gained_larger_than_1()/100:.4f}",
+        f"{self.num_times_gained_larger_than_1()}"]
+
+        data_2 = [
+        f"{self.avg_start_year():.2f}",
+        f"{self.avg_end_year():.2f}",
+        f"{self.avg_investment_time():.2f}"
+        ]
+
+        final_data = (data + cagr_threshold_data + data_2) if cagr_threshold_stats else (data + data_2)
+        return "\t".join(final_data)
 
     @staticmethod
     def get_tab_printed_invesment_headers():
-        return """Leverage Ratio\tCAGR\tTotal Gain\t% Return\tWas largest gain for ratios\tGained more than 1.0 ratio\tStart Date\tEnd Date\tInvestment Period (yrs)"""
+        return """Leverage Ratio\tCAGR (Mult by 100 for percentage)\tTotal Gain\tReturn (Mult by 100 for percentage)\tWas largest gain for ratios\tGained more than 1.0 ratio\tStart Date\tEnd Date\tInvestment Period (yrs)"""
         
     def get_tab_printed_investment(self, index):
         if index < 0 or index >= len(self.CAGRs):
             raise IndexError(f"Index {index} not in range of recorded investments (0 to {len(self.CAGRs)-1})")
-        return f"""{self.leverage_ratio}\t{self.CAGRs[index]:.2f}\t{self.total_gains[index]:.2f}\t{self.total_percentage_returns[index]:.2f}\t{"Yes" if self.was_largest_gain_list[index] else "No"}\t{"Yes" if self.gained_more_than_1_ratio_list[index] else "No"}\t{self.start_dates[index]}\t{self.end_dates[index]}\t{self.investment_periods[index]:.2f}"""
+        return f"""{self.leverage_ratio}\t{self.CAGRs[index]/100:.4f}\t{self.total_gains[index]:.2f}\t{self.total_percentage_returns[index]/100:.4f}\t{"Yes" if self.was_largest_gain_list[index] else "No"}\t{"Yes" if self.gained_more_than_1_ratio_list[index] else "No"}\t{self.start_dates[index]}\t{self.end_dates[index]}\t{self.investment_periods[index]:.2f}"""
+    
     def get_printable_index_information(self, index):
         if index < 0 or index >= len(self.CAGRs):
             raise IndexError(f"Index {index} not in range of recorded investments (0 to {len(self.CAGRs)-1})")
