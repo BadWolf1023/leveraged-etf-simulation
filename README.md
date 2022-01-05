@@ -29,7 +29,7 @@ The following assumptions are made:
 3. Dividends are not reinvested. This makes certain calculations difficult. Generally speaking though, leveraged ETFs do not offer as good of a dividend as a normal ETF. Eg compare DIA's 1.6% dividend to UDOW's .2% dividend.
 4. There are no adjustments for inflation because the comparison is not against cash, but rather is against an index.
 5. Taxes are ignored. Various ETFs are structured differently, resulting in different tax repercussions for the investor. Note that taxes can be due as frequently as a quarterly basis depending on the structure of the ETF, and taxes rates can vary (long term capital gains taxes, corporate taxes, and individual taxes).
-6. Yearly management fees can be included in the calculation in the common.py file. A suggested 1% management fee would match most leveraged ETFs that track major U.S. indexes (eg UDOW, TQQQ, ... all charge .95%). If the leverage of the investment is 1.0, the leveraged ETF management fee in common.py will not apply.
+6. Yearly management fees can be included in the calculation in the `common.py` file. A suggested 1% management fee would match most leveraged ETFs that track major U.S. indexes (eg UDOW, TQQQ, ... all charge .95%). If the leverage of the investment is 1.0, the leveraged ETF management fee in `common.py` will not apply.
 
 *I am aware that different expertise, knowledge, metrics, and other factors can increase (or decrease) the odds of a well timed entry or exit, but because the average investor's entries and exits are quite random in relation to the short term (and sometimes even long term) outcome of the security, a random entry and exit seem to simulate actual investor behaviour the best.
 
