@@ -49,7 +49,7 @@ Compound Annual Growth Rate (%) = [[((price of security at entry)/(price of secu
 - While the exact optimal leverage for each varies, a leverage of 2.7 yields the optimal CAGR average for all 3 indexes.
 - A lower leverage (1.5-2.2) frequently outperforms the index at a much higher frequency, though the CAGR average is lower. Therefore, you could significantly reduce the chances of the normal index outperforming your investment by investing at a lower leverage if that is the concern.
 - A leverage of 3.8-3.9 generates the largest average returns overall.
-- It makes sense that 2.7 is the optimal leverage for maximum CAGR. This nicely balances both the high risk/high payoff/high loss of the large average returns of 3.8 leverage, and the safe odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
+- It makes sense that 2.7 is the optimal leverage for maximum CAGR. This nicely balances both the high risk/high payoff/high loss of a 3.8 leverage ratio (that has the largest overall returns), and the safer odds of outperforming the 1.0 index at a 1.5-2.2 leverage.
 
 
 ## DISCLAIMER:
