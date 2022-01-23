@@ -69,7 +69,7 @@ class Investment():
 
         self.end_investment = current_investment_amount
         self.total_return_dollars = round(self.end_investment - self.start_investment, 2)
-        self.total_return_percentage = (self.total_return_dollars / self.start_investment) * 100
+        self.total_return_percentage = round((self.total_return_dollars / self.start_investment) * 100, 5)
         self.CAGR = self.get_CAGR()
 
     #CAGR (%) = [[((price of security at exit)/(price of security at entry)) ^ (1 / number of years security is held)] - 1] * 100
@@ -138,7 +138,9 @@ class InvestmentsStats():
         self.end_years = []
         self.investment_periods = []
 
-    
+    def get_num_investments(self) -> int:
+        return len(self.CAGRs)
+        
     def add_investment_results(self, investment:Investment, was_largest_gain, gained_more_than_1_ratio):
         assert(investment.leverage_ratio == self.leverage_ratio)
         self.CAGRs.append(investment.CAGR)
@@ -164,6 +166,7 @@ class InvestmentsStats():
 
     def percentage_of_time_gained_larger_than_1(self):
         return round((sum(self.gained_more_than_1_ratio_list) / len(self.gained_more_than_1_ratio_list))*100, 2)
+    
     def num_times_gained_larger_than_1(self):
         return round(sum(self.gained_more_than_1_ratio_list), 2)
 
@@ -258,11 +261,14 @@ class InvestmentsStats():
         return round(frequency_for_threshold, 2) if should_round else frequency_for_threshold
 
     @staticmethod
-    def get_tab_printed_overview_headers(cagr_threshold=0.0, cagr_threshold_stats=True):
+    def get_tab_printed_overview_headers(cagr_threshold=0.0, cagr_threshold_stats=True, return_threshold_stats=True):
         cagr_threshold_headers = [f"Percentage of time CAGR < {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
         f"Avg CAGR when CAGR < {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
         f"Percentage of time CAGR > {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)",
         f"Avg CAGR when CAGR > {cagr_threshold*100:.1f}% (Mult data by 100 for percentage)"]
+
+        all_return_threshold_headers = [f"Percentage of time return < {t*100/4:1.0f}% (Mult data by 100 for percentage)" for t in range(-3, 1)]
+        all_return_threshold_headers.extend([f"Percentage of time return > {t*100/4:1.0f}% (Mult data by 100 for percentage)" for t in range(5)])
 
         headers = ["Leverage Ratio",
         "Largest gain # times",
@@ -285,16 +291,29 @@ class InvestmentsStats():
         "Average investment period"
         ]
 
-        final_headers = (headers + cagr_threshold_headers + headers_2) if cagr_threshold_stats else (headers + headers_2)
-        return "\t".join(final_headers)
+        final_data = headers
+        final_data.extend((cagr_threshold_headers if cagr_threshold_stats else []))
+        final_data.extend((all_return_threshold_headers if return_threshold_stats else []))
+        final_data.extend(headers_2)
+        return "\t".join(final_data)
 
-    def get_tab_printed_overview_data(self, cagr_threshold=0.0, cagr_threshold_stats=True):
+    def num_times_return_threshold(self, threshold_percentage:float, below=True):
+        filter_func = (lambda x: x < threshold_percentage) if below else (lambda x: x > threshold_percentage)
+        return len(list(filter(filter_func, self.total_percentage_returns)))
+
+
+    def get_tab_printed_overview_data(self, cagr_threshold=0.0, cagr_threshold_stats=True, return_threshold_stats=True):
         cagr_avg_when_less_than_threshold = self.avg_CAGR_when_less_than(cagr_threshold)
         cagr_avg_when_more_than_threshold = self.avg_CAGR_when_greater_than(cagr_threshold)
         cagr_threshold_data = [f"{self.percentage_CAGR_less_than(cagr_threshold)/100:.4f}",
         f"{cagr_avg_when_less_than_threshold/100:.4f}" if isinstance(cagr_avg_when_less_than_threshold, float) else f"{cagr_avg_when_less_than_threshold}",
         f"{self.percentage_CAGR_greater_than(cagr_threshold)/100:.4f}",
         f"{cagr_avg_when_more_than_threshold/100:.4f}" if isinstance(cagr_avg_when_more_than_threshold, float) else f"{cagr_avg_when_more_than_threshold}"]
+
+        below_return_threshold_percentages = [f"{self.num_times_return_threshold(t*100/4, below=True) / self.get_num_investments():.4f}" for t in range(-3, 1)]
+        above_return_threshold_percentages = [f"{self.num_times_return_threshold(t*100/4, below=False) / self.get_num_investments():.4f}" for t in range(5)]
+        all_return_threshold_percentages = below_return_threshold_percentages + above_return_threshold_percentages
+
 
         data = [f"{self.leverage_ratio}",
         f"{self.num_times_was_largest_gain()}",
@@ -317,7 +336,10 @@ class InvestmentsStats():
         f"{self.avg_investment_time():.2f}"
         ]
 
-        final_data = (data + cagr_threshold_data + data_2) if cagr_threshold_stats else (data + data_2)
+        final_data = data
+        final_data.extend((cagr_threshold_data if cagr_threshold_stats else []))
+        final_data.extend((all_return_threshold_percentages if return_threshold_stats else []))
+        final_data.extend(data_2)
         return "\t".join(final_data)
 
     @staticmethod

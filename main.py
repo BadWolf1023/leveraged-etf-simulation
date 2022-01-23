@@ -149,7 +149,13 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
         leverage_ratios.append(1.0)
 
     results = defaultdict(hint_typed_dd)
+    progress_split_amount = 10
+    progress_indexes = {ind:f"{ind_internal*progress_split_amount}" for ind_internal, ind in enumerate(range(0, num_times+1, num_times//progress_split_amount), 0)}
+    progress_indexes[num_times-1] = "100"
     for i in range(num_times):
+        if common.PRINT_PROGRESS:
+            if i in progress_indexes:
+                print(f"{progress_indexes[i]}% finished")
         investment_length = choose_random_length() #Choose random length of time for investment
         min_start_date = max( security_historical_data[0].date, security_historical_data[0].date if common.MINIMUM_START_YEAR is None else datetime(common.MINIMUM_START_YEAR, 1, 1).date() ) #Determine the minimum start date for the investment
         max_start_date = min( security_historical_data[-1].date, security_historical_data[-1].date if common.MAXIMUM_END_YEAR is None else datetime(common.MAXIMUM_END_YEAR, 12, 31).date() ) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
@@ -186,7 +192,6 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
     simulation_results = restructure_results(simulation_results)
     
     for period_investment_results in simulation_results:
-        # print(get_period_investment_results_str(period_investment_results))
         largest_return_ratio = max(period_investment_results, key=lambda x: x.total_return_dollars).leverage_ratio
         
         for leverage_ratio_results in period_investment_results:
@@ -194,38 +199,20 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
             cur_leverage_ratio = leverage_ratio_results.leverage_ratio
             is_best_ratio = cur_leverage_ratio == largest_return_ratio
             leverage_results[cur_leverage_ratio].add_investment_results(leverage_ratio_results, is_best_ratio, is_greater_than_1_ratio)
-    
 
-    result = ""
-    for leverage_ratio, total_leverage_result in leverage_results.items():
-        result += f"""Leverage Ratio: {leverage_ratio}
-   - Largest gain # times:   {total_leverage_result.num_times_was_largest_gain():.2f}
-   - Largest gain % of time: {total_leverage_result.percentage_of_time_was_largest_gain():.2f}%
-   - Average Gain: ${total_leverage_result.average_gain():.2f}
-   - Best Gain:    ${total_leverage_result.best_gain():.2f}
-   - Worst Gain:   ${total_leverage_result.worst_gain():.2f}
-   - Average    overall return: {total_leverage_result.average_overall_return():.2f}%
-   - Best       overall return: {total_leverage_result.best_overall_return():.2f}%
-   - Worst      overall return: {total_leverage_result.worst_overall_return():.2f}%
-   - Average CAGR: {total_leverage_result.average_CAGR():.2f}%
-   - Best    CAGR: {total_leverage_result.best_CAGR():.2f}%
-   - Worst   CAGR: {total_leverage_result.worst_CAGR():.2f}%
-   - Percentage of time > 1.0: {total_leverage_result.percentage_of_time_gained_larger_than_1():.2f}%
-   - Number of times > 1.0:    {total_leverage_result.num_times_gained_larger_than_1():.2f}
-   - Average start year:     {total_leverage_result.avg_start_year():.2f} yrs
-   - Average end year:       {total_leverage_result.avg_end_year():.2f} yrs
-   - Average investment time:{total_leverage_result.avg_investment_time():.2f} yrs
-"""
-
-    spreadsheet_formatted_result = InvestmentsStats.get_tab_printed_overview_headers(cagr_threshold=common.EXTRA_STAT_CAGR_THRESHOLD, cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD)
+    spreadsheet_formatted_result = InvestmentsStats.get_tab_printed_overview_headers(cagr_threshold=common.EXTRA_STAT_CAGR_THRESHOLD,
+                                                                                     cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD,
+                                                                                     return_threshold_stats=common.PRINT_EXTRA_RETURN_THRESHOLD_STATS)
     for leverage_ratio, total_leverage_result in leverage_results.items():
         spreadsheet_formatted_result += "\n" + total_leverage_result.get_tab_printed_overview_data(
             cagr_threshold=common.EXTRA_STAT_CAGR_THRESHOLD,
-            cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD
+            cagr_threshold_stats=common.PRINT_EXTRA_STATS_SPECIFIC_CAGR_THRESHOLD,
+            return_threshold_stats=common.PRINT_EXTRA_RETURN_THRESHOLD_STATS
         )
-    #print(result)
 
-    print(f"Total results:\n{spreadsheet_formatted_result}\n\n")
+    
+
+    results_str = f"Total results:\n{spreadsheet_formatted_result}\n\n"
 
     if common.PRINT_EXTRA_STATS_ON_BEST_WORST:
         best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
@@ -237,9 +224,13 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
             worst_cagr_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_CAGR_index())
             worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_overall_return_index())
             best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
-        print(f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n\n\n\n\n")
+        results_str += f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n\n\n\n\n"
 
-   
+    if common.OUTPUT_FILE_NAME:
+        with open(common.OUTPUT_FILE_NAME, "w") as f:
+            f.write(results_str)
+    else:
+        print(results_str)
 
 
 if __name__ == "__main__":
