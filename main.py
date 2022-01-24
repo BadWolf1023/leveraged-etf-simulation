@@ -187,7 +187,7 @@ Original Investment: ${period_investment_results[0].start_investment:.2f}"""
     return result_text
 
 
-def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> None:
+def get_results_str(simulation_results:DefaultDict[float, hint_typed_dd], ) -> None:
     leverage_results = {leverage_ratio:InvestmentsStats(leverage_ratio) for leverage_ratio in simulation_results}
     simulation_results = restructure_results(simulation_results)
     
@@ -226,21 +226,28 @@ def print_results(simulation_results:DefaultDict[float, hint_typed_dd], ) -> Non
             best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
         results_str += f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n\n\n\n\n"
 
+    return results_str
+
+def output_results(results_str:str):
     if common.OUTPUT_FILE_NAME:
-        with open(common.OUTPUT_FILE_NAME, "w") as f:
+        with open(common.OUTPUT_FILE_NAME, "a") as f:
             f.write(results_str)
     else:
         print(results_str)
 
-
 if __name__ == "__main__":
+    if common.OUTPUT_FILE_NAME:
+        with open(common.OUTPUT_FILE_NAME, "w") as f:
+            pass
+
     for file_name in common.file_names:
-        print(f"File: {file_name}")
+        file_name_str = f"File: {file_name}"
+        print(file_name_str)
         load_data(file_name)
         verify_correctness()
         simulation_results = run_simulation(num_times=common.NUMBER_OF_INVESTMENTS, leverage_ratios=[1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0])
         
-        print_results(simulation_results)
+        output_results(file_name_str + "\n" + get_results_str(simulation_results))
 
 
 
