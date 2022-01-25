@@ -58,7 +58,7 @@ from asset_data import DailyAssetData
 
 from typing import DefaultDict, List
 import common
-from investment import Investment, InvestmentsStats
+from investment import Investment, InvestmentsStats, InvestmentSplitLeverage
 
 
 security_historical_data:List[DailyAssetData] = []
@@ -87,7 +87,7 @@ def load_data(file_name = None):
             security_historical_data.append(cur_day)
             previous_day = cur_day
 
-#If we had invested the close amount of the security on the first day, using daily gain and loss percentages,
+#If we had invested the close amount of the security on the first day, using daily return percentages,
 # we should arrive at the security value today
 #Function throws an assertion error if this is not true
 def verify_correctness():
@@ -148,14 +148,14 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
     if 1.0 not in leverage_ratios:
         leverage_ratios.append(1.0)
 
-    results = defaultdict(hint_typed_dd)
-    progress_split_amount = 10
-    progress_indexes = {ind:f"{ind_internal*progress_split_amount}" for ind_internal, ind in enumerate(range(0, num_times+1, num_times//progress_split_amount), 0)}
-    progress_indexes[num_times-1] = "100"
+    results_normal = defaultdict(hint_typed_dd)
+    progress_split_amount = 20
+    progress_split_amount = progress_split_amount if (progress_split_amount <= num_times) else num_times
+    progress_indexes = {ind:f"{ind_internal*(100/progress_split_amount)/100:.0%}" for ind_internal, ind in enumerate(range(0, num_times, num_times//progress_split_amount), 0)}
+    progress_indexes[num_times-1] = f"{1:.0%}"
     for i in range(num_times):
-        if common.PRINT_PROGRESS:
-            if i in progress_indexes:
-                print(f"{progress_indexes[i]}% finished")
+        if common.PRINT_PROGRESS and i in progress_indexes:
+            print(f"{progress_indexes[i]} finished")
         investment_length = choose_random_length() #Choose random length of time for investment
         min_start_date = max( security_historical_data[0].date, security_historical_data[0].date if common.MINIMUM_START_YEAR is None else datetime(common.MINIMUM_START_YEAR, 1, 1).date() ) #Determine the minimum start date for the investment
         max_start_date = min( security_historical_data[-1].date, security_historical_data[-1].date if common.MAXIMUM_END_YEAR is None else datetime(common.MAXIMUM_END_YEAR, 12, 31).date() ) - investment_length #Determine the maximum start date for the investment, which is the maximum start date minus the investment length
@@ -165,9 +165,29 @@ def run_simulation(num_times=1000, leverage_ratios=[1.0, 2.0, 3.0]) -> DefaultDi
 
         #print(f"{security_historical_data[start_index].date} to {end_date}")
         for leverage_ratio in leverage_ratios:
-            cur_investment = Investment(start_index, end_index, security_historical_data, leverage_ratio)
-            results[leverage_ratio].append(cur_investment)
-    return results
+            if common.USE_REALISTIC_SPLIT_LEVERAGE:
+                split_leverage_2_ratio = InvestmentSplitLeverage(start_index, end_index, security_historical_data, leverage_ratio, 2.0)
+                split_leverage_3_ratio = InvestmentSplitLeverage(start_index, end_index, security_historical_data, leverage_ratio, 3.0)
+                split_leverage_2_3_ratio = InvestmentSplitLeverage(start_index, end_index, security_historical_data, leverage_ratio, 3.0, 2.0)
+                if leverage_ratio.is_integer() or not (split_leverage_2_ratio.can_split_weights()
+                                                    or split_leverage_3_ratio.can_split_weights()
+                                                    or split_leverage_2_3_ratio.can_split_weights()):
+                    cur_investment = Investment(start_index, end_index, security_historical_data, leverage_ratio).compute_return()
+                    results_normal[(leverage_ratio, cur_investment.get_leverage_ratio_str())].append(cur_investment)
+                if split_leverage_2_ratio.can_split_weights():
+                    split_leverage_2_ratio.compute_return()
+                    results_normal[(leverage_ratio, split_leverage_2_ratio.get_leverage_ratio_str())].append(split_leverage_2_ratio)
+                if split_leverage_3_ratio.can_split_weights():
+                    split_leverage_3_ratio.compute_return()
+                    results_normal[(leverage_ratio, split_leverage_3_ratio.get_leverage_ratio_str())].append(split_leverage_3_ratio)
+                if split_leverage_2_3_ratio.can_split_weights():
+                    split_leverage_2_3_ratio.compute_return()
+                    results_normal[(leverage_ratio, split_leverage_2_3_ratio.get_leverage_ratio_str())].append(split_leverage_2_3_ratio)
+
+            else:
+                cur_investment = Investment(start_index, end_index, security_historical_data, leverage_ratio).compute_return()
+                results_normal[(leverage_ratio, cur_investment.get_leverage_ratio_str())].append(cur_investment)
+    return results_normal
 
 def restructure_results(simulation_results:DefaultDict[float, hint_typed_dd]) -> List[List[Investment]]:
     return [list(r) for r in zip(*simulation_results.values())]
@@ -181,22 +201,22 @@ Original Investment: ${period_investment_results[0].start_investment:.2f}"""
         result_text += f"""
     - Ratio:  {leverage_ratio_results.leverage_ratio}
         - End Value: ${leverage_ratio_results.end_investment:.2f}
-        - Total % Return: {round(leverage_ratio_results.total_return_percentage, 2)}%
-        - CAGR %: {round(leverage_ratio_results.CAGR, 2)}%
+        - Total Return: {leverage_ratio_results.total_return_ratio:.2%}
+        - CAGR %: {leverage_ratio_results.CAGR:.2%}
         - Total Gain: ${leverage_ratio_results.total_return_dollars:.2f}"""
     return result_text
 
 
-def get_results_str(simulation_results:DefaultDict[float, hint_typed_dd], ) -> None:
-    leverage_results = {leverage_ratio:InvestmentsStats(leverage_ratio) for leverage_ratio in simulation_results}
-    simulation_results = restructure_results(simulation_results)
+def get_results_str(simulation_results:DefaultDict[str, hint_typed_dd]) -> str:
+    leverage_results = {leverage_ratio_str:InvestmentsStats(leverage_ratio, leverage_ratio_str) for leverage_ratio, leverage_ratio_str in simulation_results}
+    restructured_results = restructure_results(simulation_results)
     
-    for period_investment_results in simulation_results:
-        largest_return_ratio = max(period_investment_results, key=lambda x: x.total_return_dollars).leverage_ratio
+    for period_investment_results in restructured_results:
+        largest_return_ratio = max(period_investment_results, key=lambda x: x.total_return_dollars).get_leverage_ratio_str()
         
         for leverage_ratio_results in period_investment_results:
             is_greater_than_1_ratio = leverage_ratio_results.total_return_dollars > list(filter(lambda x: x.leverage_ratio == 1.0, period_investment_results))[0].total_return_dollars
-            cur_leverage_ratio = leverage_ratio_results.leverage_ratio
+            cur_leverage_ratio = leverage_ratio_results.get_leverage_ratio_str()
             is_best_ratio = cur_leverage_ratio == largest_return_ratio
             leverage_results[cur_leverage_ratio].add_investment_results(leverage_ratio_results, is_best_ratio, is_greater_than_1_ratio)
 
@@ -211,19 +231,19 @@ def get_results_str(simulation_results:DefaultDict[float, hint_typed_dd], ) -> N
         )
 
     
-
-    results_str = f"Total results:\n{spreadsheet_formatted_result}\n\n"
+    new_lines = '\n'*20
+    results_str = f"Total results:\n{spreadsheet_formatted_result}{new_lines}"
 
     if common.PRINT_EXTRA_STATS_ON_BEST_WORST:
-        best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
-        worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers()}"
+        best_cagr_text = f"Best CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers(is_CAGR=True)}"
+        worst_cagr_text = f"Worst CAGR Info:\n{InvestmentsStats.get_tab_printed_invesment_headers(is_CAGR=True)}"
         worst_return_info_text = f"Worst Overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
         best_return_info_text = f"Best overall return Info: \n{InvestmentsStats.get_tab_printed_invesment_headers()}"
         for leverage_ratio, total_leverage_result in leverage_results.items():
             best_cagr_text += "\n" + total_leverage_result.get_tab_printed_investment(total_leverage_result.best_CAGR_index())
             worst_cagr_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_CAGR_index())
-            worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_overall_return_index())
-            best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_overall_return_index())
+            worst_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.worst_return_index())
+            best_return_info_text +=  "\n" + total_leverage_result.get_tab_printed_investment( total_leverage_result.best_return_index())
         results_str += f"{best_cagr_text}\n\n{worst_cagr_text}\n\n{worst_return_info_text}\n\n{best_return_info_text}\n\n\n\n\n\n"
 
     return results_str
