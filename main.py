@@ -68,20 +68,16 @@ security_historical_data:List[DailyAssetData] = []
 class IncorrectUsage(Exception):
     pass
 
-def should_break(csv_line):
-    if not isinstance(csv_line, list):
-        return True
-    if len(csv_line) < 1 or not isinstance(csv_line[0], str) or csv_line[0] == '':
-        return True
 
 def load_data(file_name = None):
+    common.dividend_cost_data.set_file_name(file_name)
     with open(file_name) as csvfile:
         reader = csv.reader(csvfile, delimiter=',')
         header = next(reader)
         previous_day = None
         security_historical_data.clear()
         for r in reader:
-            if should_break(r):
+            if common.should_break(r):
                 break
             cur_day = DailyAssetData(r, previous_day)
             security_historical_data.append(cur_day)

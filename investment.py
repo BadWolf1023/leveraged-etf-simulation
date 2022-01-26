@@ -5,7 +5,7 @@
  * Written by William Lyles <willglyles@gmail.com>, January 4th, 2022
  */
  """
-from common import DAYS_PER_YEAR, STARTING_INVESTMENT_AMOUNT, DECREASE_LEVERAGE_AT_YEAR_END,YEAR_END_DECREASE
+from common import DAYS_PER_YEAR, INCLUDE_DIVIDENDS, STARTING_INVESTMENT_AMOUNT, CHARGE_ETF_EXPENSES, dividend_cost_data
 from datetime import datetime, date
 
 
@@ -28,9 +28,6 @@ class Investment():
             return False
         return cur_date.year > previous_date.year
 
-    def should_charge_interest(self, cur_date, previous_date):
-        return self.is_new_year(cur_date, previous_date)
-
     def is_full_year(self, first_date, previous_date, cur_date):
         if previous_date.year == first_date.year: # Case 1 is first year
             return False
@@ -39,15 +36,28 @@ class Investment():
         else: # Case 3 is final year (not full)
             return False
 
-    def charge_interest(self, first_date, previous_date, cur_date, current_investment_amount):
-        if previous_date.year == first_date.year: #Charge proportional interest for first year
-            proportional_interest = YEAR_END_DECREASE * self.get_fractional_year_from_end(first_date)
-            return round(current_investment_amount * (1 - proportional_interest), 2)
-        elif cur_date.year > previous_date.year: #Charge interest for full year - it is not a partial first year, and the year did change
-            return round(current_investment_amount * (1 - YEAR_END_DECREASE), 2)
-        else: #Charge interest for partial final year
-            proportional_interest = YEAR_END_DECREASE * self.get_fractional_year(cur_date)
-            return round(current_investment_amount * (1 - proportional_interest), 2)
+    def after_charges_and_dividends(self, first_date: date, previous_date: date, cur_date: date, current_investment_amount: float, leverage: float):
+        prorated_change = 1
+        year = None
+        if previous_date.year == first_date.year: # Prorated change for first year
+            prorated_change = self.get_fractional_year_from_end(first_date)
+            year = first_date.year
+        elif cur_date.year > previous_date.year: # No prorate. Full year - it is not a partial first year, and the year did change
+            prorated_change = 1
+            year = previous_date.year
+        else: #prorate change for partial final year
+            prorated_change = self.get_fractional_year(cur_date)
+            year = cur_date.year
+
+        change = 0
+        if CHARGE_ETF_EXPENSES:
+            print(f"Annual cost for {year} @ {leverage} leverage: {dividend_cost_data.get_annual_cost(year, leverage)}")
+            change -= dividend_cost_data.get_annual_cost(year, leverage)
+        if INCLUDE_DIVIDENDS:
+            print(f"Annual dividend for {year} @ {leverage} leverage: {dividend_cost_data.get_annual_dividend(year, leverage)}")
+            change += dividend_cost_data.get_annual_dividend(year, leverage)
+        final_change_ratio = 1 + (change * prorated_change)
+        return round(current_investment_amount * final_change_ratio, 2)
 
 
     def compute_return(self):
@@ -62,17 +72,16 @@ class Investment():
             current_investment_amount *= 1 + (daily_data.ratio_change * self.leverage_ratio)
             current_investment_amount = round(current_investment_amount, 2)
             
-            if DECREASE_LEVERAGE_AT_YEAR_END and self.leverage_ratio > 1.0 and self.should_charge_interest(daily_data.date, previous_date):
-                current_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, current_investment_amount)
+            if self.is_new_year(daily_data.date, previous_date):
+                current_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, current_investment_amount, self.leverage_ratio)
 
             if current_investment_amount <= 0.0:
                 raise AllMoneyLost(f"If you see this exception, this leveraged ETF ceased operations because it dropped to 0. You lost all your money on {daily_data.date} for this investment:\n{str(self)}")
 
             previous_date = daily_data.date
 
-        if DECREASE_LEVERAGE_AT_YEAR_END and self.leverage_ratio > 1.0:
-            current_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, current_investment_amount)
-
+        
+        current_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, current_investment_amount, self.leverage_ratio)
         self.end_investment = current_investment_amount
         self.total_return_dollars = round(self.end_investment - self.start_investment, 2)
         self.total_return_ratio = round((self.total_return_dollars / self.start_investment), 5)
@@ -156,23 +165,17 @@ class InvestmentSplitLeverage(Investment):
             high_leverage_investment_amount *= 1 + (daily_data.ratio_change * high_leverage)
             high_leverage_investment_amount = round(high_leverage_investment_amount, 2)
             
-            if DECREASE_LEVERAGE_AT_YEAR_END and self.should_charge_interest(daily_data.date, previous_date):
-                if low_leverage != 1.0:
-                    low_leverage_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, low_leverage_investment_amount)
-                if high_leverage != 1.0:
-                    high_leverage_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, high_leverage_investment_amount)
+            if self.is_new_year(daily_data.date, previous_date):
+                low_leverage_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, low_leverage_investment_amount, low_leverage)
+                high_leverage_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, high_leverage_investment_amount, high_leverage)
 
             if (low_leverage_investment_amount + high_leverage_investment_amount) <= 0.0:
                 raise AllMoneyLost(f"If you see this exception, this leveraged ETF ceased operations because it dropped to 0. You lost all your money on {daily_data.date} for this investment:\n{str(self)}")
 
             previous_date = daily_data.date
-        else:
-            if DECREASE_LEVERAGE_AT_YEAR_END:
-                if low_leverage != 1.0:
-                    low_leverage_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, low_leverage_investment_amount)
-                if high_leverage != 1.0:
-                    high_leverage_investment_amount = self.charge_interest(first_date, previous_date, daily_data.date, high_leverage_investment_amount)
 
+        low_leverage_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, low_leverage_investment_amount, low_leverage)
+        high_leverage_investment_amount = self.after_charges_and_dividends(first_date, previous_date, daily_data.date, high_leverage_investment_amount, high_leverage)
         self.end_investment = round(low_leverage_investment_amount + high_leverage_investment_amount, 2)
         self.total_return_dollars = round(self.end_investment - self.start_investment, 2)
         self.total_return_ratio = round((self.total_return_dollars / self.start_investment), 5)

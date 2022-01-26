@@ -8,7 +8,6 @@
 
 from typing import List
 from dateutil.parser import parse
-from datetime import date
 
 
 def fix_dollars(amount:str) -> float:
